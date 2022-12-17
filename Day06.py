@@ -4,13 +4,13 @@ import os
 from Utils import *
 
 
-def part1(input):
+def part1(input, marker_length=4):
     # Input is only one line in this case
     input = input[0]
     marker_buffer = []
 
     for idx, char in enumerate(input):
-        if len(marker_buffer) < 4:
+        if len(marker_buffer) < marker_length:
             if char in marker_buffer:
                 # Character is repeated
                 # Remove first character until the repeated one
@@ -24,7 +24,7 @@ def part1(input):
     return -1
 
 def part2(input):
-    return len(input)
+    return part1(input, 14)
 
 def main(input):
     lines = read_input(input)
@@ -40,6 +40,6 @@ if __name__ == "__main__":
     filename = os.path.splitext(sys.argv[0])[0]
     
     test_part(f"data/{filename}_test.txt", part1, 10)
-    # test_part(f"data/{filename}_test.txt", part2, 0)
+    test_part(f"data/{filename}_test.txt", part2, 29)
 
     main(f"data/{filename}.txt")
