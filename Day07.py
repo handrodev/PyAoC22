@@ -121,8 +121,7 @@ def part1(input):
     visit = list(cwd.subdirs.values())
     while len(visit) > 0:
         # Pop last element of visit list
-        cwd = visit[-1]
-        del visit[-1]
+        cwd = visit.pop(-1)
         
         # If its size is <= SIZE_LIMIT
         if cwd.size <= SIZE_LIMIT:
@@ -155,8 +154,7 @@ def part2(input):
         visit = list(cwd.subdirs.values())
         while len(visit) > 0:
             # Pop last element of visit list
-            cwd = visit[-1]
-            del visit[-1]
+            cwd = visit.pop(-1)
             
             dir_spaces.append(cwd.size)
 
