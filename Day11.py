@@ -45,7 +45,10 @@ def solution(input, rounds=20, divide_by_three=True):
 
         monkeys[i] = Monkey(items, operation, div_test, div_true, div_false)
 
-    # Compute product of all monkey divisors
+    # Compute product of all monkey divisors to keep worry levels "manageable"
+    # (item mod div_test) -> ((item mod k) mod div_test) with k big enough so the result won't be cut off
+    # And small enough so the numbers won't be too large to handle
+    # E.g. using k = monkey[0].div_test * monkey[1].div_test * .. * monkey[n].div_test
     divisor = reduce(mul, [m.div_test for m in monkeys.values()], 1)
 
     # Start simulation for as many rounds as required
