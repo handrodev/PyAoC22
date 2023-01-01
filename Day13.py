@@ -3,16 +3,13 @@ import os
 
 from Utils import *
 
+from functools import cmp_to_key
 
-def part1(input):
-    correct_indices = []
-    pair_index = 1
-    left = None
-    right = None
 
-    def compare_elements(left, right):
+def compare_elements(left, right):
         # print(f"Compare {left} and {right}")
-        
+        result = 0
+
         if isinstance(left, int) and isinstance(right, int):
             if left > right:
                 # print(f"Left {left} > right {right}: incorrect order")
@@ -53,6 +50,12 @@ def part1(input):
 
         return result
 
+def part1(input):
+    correct_indices = []
+    pair_index = 1
+    left = None
+    right = None
+
     for line in input:
         line = line.strip()
 
@@ -80,7 +83,27 @@ def part1(input):
     return sum(correct_indices)
 
 def part2(input):
-    return len(input)
+    # Get all the (non-empty) packets
+    packets = []
+    for line in input:
+        line = line.strip()
+
+        if line:  # Non-empty line
+            packets.append(eval(line))
+    
+    # Add divider packets
+    div_packet1 = [[2]]
+    div_packet2 = [[6]]
+    packets.append(div_packet1)
+    packets.append(div_packet2)
+
+    # Sort packets with comparison function
+    sorted_packets = sorted(packets, key=cmp_to_key(compare_elements), reverse=True)
+
+    id1 = sorted_packets.index(div_packet1) + 1
+    id2 = sorted_packets.index(div_packet2) + 1
+    
+    return id1 * id2
 
 def main(input):
     lines = read_input(input)
@@ -95,5 +118,5 @@ def main(input):
 if __name__ == "__main__":
     filename = os.path.splitext(sys.argv[0])[0]
     test_part(f"data/{filename}_test.txt", part1, 13)
-    # test_part(f"data/{filename}_test.txt", part2, 0)
+    test_part(f"data/{filename}_test.txt", part2, 140)
     main(f"data/{filename}.txt")
