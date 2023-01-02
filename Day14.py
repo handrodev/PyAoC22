@@ -99,12 +99,10 @@ def part1(input):
     
     # As long as sand is moving inside the grid (check at the end of loop)
     while True:
+        curr_x, curr_y = sand_src.x, sand_src.y
         # Attempt to generate sand and move straight down from sand source
-        curr_x, curr_y = sand_src.x, sand_src.y + 1
-        can_move = not point_is_rock_or_sand(Point(curr_x, curr_y), rocks, sand)
-        
         # As long as the newly generated sand can move (inside the grid)
-        while can_move and 0 <= curr_x < w and 0 <= curr_y < h:
+        while 0 <= curr_x < w and 0 <= curr_y < h:
             # Attempt to move straight down
             curr_y += 1
             intersection = point_is_rock_or_sand(Point(curr_x, curr_y), rocks, sand)
@@ -114,19 +112,17 @@ def part1(input):
                 # Attempt to fall left
                 if not point_is_rock_or_sand(Point(curr_x - 1, curr_y), rocks, sand):
                     curr_x -= 1
-                    can_move = True
                 
                 elif not point_is_rock_or_sand(Point(curr_x + 1, curr_y), rocks, sand):
                     # Attempt to fall right if left is blocked
                     curr_x += 1
-                    can_move = True
                 
                 else:
                     # Stop on top if everything else failed
                     curr_y -= 1
-                    can_move = False
+                    break
 
-        if curr_x < 0 or curr_x >= w or curr_y < 0 or curr_y >= h:
+        if not (0 <= curr_x < w and 0 <= curr_y < h):
             # Last step was falling outside grid, stop
             break
 
@@ -138,7 +134,54 @@ def part1(input):
     return len(sand)
 
 def part2(input):
-    return len(input)
+    
+    paths = [[Point(*list(map(int, m.strip().split(",")))) for m in l.strip().split("->")] for l in input if l]
+    # Add a single path (sand source) at the beginning of the list
+    paths.insert(0, [Point(500, 0)])
+
+    # Normalize paths and compute width and height of the simulation grid
+    sand_src, rocks, w, h = normalize_paths(paths)
+
+    # Keep track of sand units
+    sand = set([])
+    
+    curr_x, curr_y = sand_src.x, sand_src.y
+    
+    H = h + 1
+    while True:
+        curr_x, curr_y = sand_src.x, sand_src.y
+        # Attempt to generate sand and move straight down from sand source
+        # As long as the newly generated sand can move (inside the *NEW* grid)
+        while 0 <= curr_y < H:
+            # Attempt to move straight down
+            curr_y += 1
+            new_point = Point(curr_x, curr_y)
+            intersection = new_point in rocks or new_point in sand or new_point.y == H
+            
+            if intersection:
+                # Intersected with sand or path
+                # Attempt to fall left
+                new_point_left = Point(curr_x - 1, curr_y)
+                new_point_right = Point(curr_x + 1, curr_y)
+                if not (new_point_left in rocks or new_point_left in sand or new_point_left.y == H):
+                    curr_x -= 1
+                
+                elif not (new_point_right in rocks or new_point_right in sand or new_point_right.y == H):
+                    # Attempt to fall right if left is blocked
+                    curr_x += 1
+                
+                else:
+                    # Stop on top if everything else failed
+                    curr_y -= 1
+                    break
+
+        # As long as sand is not blocking the sand source
+        if curr_x == sand_src.x and curr_y == sand_src.y:
+            break
+
+        sand.add(Point(curr_x, curr_y))
+
+    return len(sand) + 1
 
 def main(input):
     lines = read_input(input)
@@ -153,5 +196,5 @@ def main(input):
 if __name__ == "__main__":
     filename = os.path.splitext(sys.argv[0])[0]
     test_part(f"data/{filename}_test.txt", part1, 24)
-    # test_part(f"data/{filename}_test.txt", part2, 0)
+    test_part(f"data/{filename}_test.txt", part2, 93)
     main(f"data/{filename}.txt")
