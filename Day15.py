@@ -5,6 +5,7 @@ import re
 from Utils import *
 from collections import namedtuple
 
+
 Point = namedtuple("Point", ["x", "y"])
 
 def manhattan_dist(pt_1: Point, pt_2: Point):
@@ -29,16 +30,13 @@ def part1(input, at_y=10):
 
         sb_dist = manhattan_dist(s, b)
 
-        if by == at_y:
-            beacons_at_y.add(b)
-
-        if sy == at_y:
-            sensors_at_y += 1
+        if by == at_y: beacons_at_y.add(b)
+        if sy == at_y: sensors_at_y += 1
 
         # Consider only sensors close enough to (at_y) to be relevant, i.e.
         # where the manhattan distance is <= abs(s.y - at_y)
         if abs(s.y - at_y) <= sb_dist:
-            S[s] = sb_dist
+            S[s] = b
             
     # Number of beacons at row Y
     # Length of the set of unique beacons at that row
@@ -46,20 +44,14 @@ def part1(input, at_y=10):
 
     # Get the ranges of X (columns) covered by each sensor at row Y
     x_ranges = []
-    # And also keep track of global minimum and maximum
-    # These determine the range of columns to look at
-    gmin_x = float('+inf')
-    gmax_x = float('-inf')
     
-    for s, d in S.items():
+    for s, b in S.items():
+        d = manhattan_dist(s, b)
         dist_to_y = abs(at_y - s.y)
         width = d - dist_to_y
         if width > 0:
             min_x = s.x - width
             max_x = s.x + width
-        
-            if min_x < gmin_x: gmin_x = min_x
-            if max_x > gmax_x: gmax_x = max_x
 
             x_ranges.append((min_x, max_x))
 
@@ -82,6 +74,7 @@ def part1(input, at_y=10):
     return no_beacons - beacons_at_y - sensors_at_y
 
 def part2(input, max_coord=20):
+    # Parse input
     # Map of (relevant) sensors
     # Key <Position> : Value <Closest beacon> (required to compute X ranges covered at Y)
     S = {}
@@ -97,7 +90,11 @@ def part2(input, max_coord=20):
 
         S[s] = b
 
-    def subpart2(at_y=10):
+    def find_beacons(at_y=10):
+        """
+        Find any beacons and return the X position of the first beacon found
+        If no possible beacons are found, return -1
+        """
         # Get the ranges of X (columns) covered by each sensor at row Y
         x_ranges = []
         
@@ -133,7 +130,7 @@ def part2(input, max_coord=20):
         return x_beacon
 
     for y in range(0, max_coord + 1):
-        beacon_x = subpart2(y)
+        beacon_x = find_beacons(at_y=y)
         if beacon_x != -1:
             break
 
