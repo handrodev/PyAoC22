@@ -38,7 +38,7 @@ def part1(input, at_y=10):
         # Consider only sensors close enough to (at_y) to be relevant, i.e.
         # where the manhattan distance is <= abs(s.y - at_y)
         if abs(s.y - at_y) <= sb_dist:
-            S[Point(sx, sy)] = sb_dist
+            S[s] = sb_dist
             
     # Number of beacons at row Y
     # Length of the set of unique beacons at that row
@@ -54,31 +54,90 @@ def part1(input, at_y=10):
     for s, d in S.items():
         dist_to_y = abs(at_y - s.y)
         width = d - dist_to_y
-        min_x = s.x - width
-        max_x = s.x + width
+        if width > 0:
+            min_x = s.x - width
+            max_x = s.x + width
         
-        if min_x < gmin_x: gmin_x = min_x
-        if max_x > gmax_x: gmax_x = max_x
+            if min_x < gmin_x: gmin_x = min_x
+            if max_x > gmax_x: gmax_x = max_x
 
-        x_ranges.append((min_x, max_x))
+            x_ranges.append((min_x, max_x))
 
-    no_beacons = 0
+    # Combine found ranges into the minimal subset of non-overlapping ranges
+    x_ranges.sort()
+    result = []
+    z1, z2 = x_ranges[0]
+    for x1, x2 in x_ranges:
+        if x1 <= z2 < x2:
+            z2 = x2
+        elif x1 > z2:
+            result.append((z1, z2))
+            z1 = x1
+            z2 = x2
     
-    # For each relevant column (X)
-    for x in range(gmin_x, gmax_x + 1):
-        # Check the X ranges of each sensor
-        for min_x, max_x in x_ranges:
-            # If the current cell is covered by some sensor
-            # There cannot be a beacon here, count it as no_beacon and break
-            if min_x <= x <= max_x:
-                no_beacons += 1
-                break
+    result.append((z1, z2))
+    no_beacons = sum([max_x - min_x + 1 for min_x, max_x in result])
 
     # Subtract number of beacons and sensors at Y and return count
     return no_beacons - beacons_at_y - sensors_at_y
 
-def part2(input):
-    return len(input)
+def part2(input, max_coord=20):
+    # Map of (relevant) sensors
+    # Key <Position> : Value <Closest beacon> (required to compute X ranges covered at Y)
+    S = {}
+    regex = re.compile("Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)")
+
+    for line in input:
+        data = list(map(int, regex.findall(line)[0]))
+        sx, sy = data[0:2]
+        s = Point(sx, sy)
+
+        bx, by = data[2:]
+        b = Point(bx, by)
+
+        S[s] = b
+
+    def subpart2(at_y=10):
+        # Get the ranges of X (columns) covered by each sensor at row Y
+        x_ranges = []
+        
+        for s, b in S.items():
+            d = manhattan_dist(s, b)
+            dist_to_y = abs(at_y - s.y)
+            width = d - dist_to_y
+            if width > 0:
+                min_x = s.x - width
+                max_x = s.x + width
+
+                x_ranges.append((min_x, max_x))
+        
+        # Combine found ranges into the minimal subset of non-overlapping ranges
+        x_ranges.sort()
+        result = []
+        z1, z2 = x_ranges[0]
+        for x1, x2 in x_ranges:
+            if x1 <= z2 < x2:
+                z2 = x2
+            elif x1 > z2:
+                result.append((z1, z2))
+                z1 = x1
+                z2 = x2
+        
+        result.append((z1, z2))
+
+        x_beacon = -1
+        if len(result) > 1:
+            # Found a possible position for a beacon (between two ranges)
+            x_beacon = result[1][0] - 1
+        
+        return x_beacon
+
+    for y in range(0, max_coord + 1):
+        beacon_x = subpart2(y)
+        if beacon_x != -1:
+            break
+
+    return beacon_x * 4000000 + y
 
 def main(input):
     lines = read_input(input)
@@ -88,10 +147,10 @@ def main(input):
         return
     
     print(part1(lines, at_y=2000000))
-    # print(part2(lines))
+    print(part2(lines, max_coord=4000000))
 
 if __name__ == "__main__":
     filename = os.path.splitext(sys.argv[0])[0]
     test_part(f"data/{filename}_test.txt", lambda x: part1(x, at_y=10), 26)
-    # test_part(f"data/{filename}_test.txt", part2, 0)
+    test_part(f"data/{filename}_test.txt", lambda x: part2(x, max_coord=20), 56000011)
     main(f"data/{filename}.txt")
