@@ -6,12 +6,12 @@ from Utils import *
 from itertools import combinations
 
 
-def adjacent(cube: tuple[int, int, int]) -> set[tuple[int,int,int]]:
+def adjacent(cube: tuple[int, int, int]) -> set[tuple[int, int, int]]:
     """
     Returns the cubes adjacent to the current one
     """
     x, y, z = cube
-    return set([(x-1,y,z), (x+1,y,z), (x,y-1,z), (x,y+1,z), (x,y,z-1), (x,y,z+1)])
+    return set([(x-1, y, z), (x+1, y, z), (x, y-1, z), (x, y+1, z), (x, y, z-1), (x, y, z+1)])
 
 
 def parse_input(input: list[str]) -> list[tuple[int, int, int]]:
@@ -28,7 +28,7 @@ def compute_surface(cubes: set[tuple[int, int, int]]) -> int:
         # Count number of cubes adjacent to the current one
         # Reduce the free faces and add to cumulated surface
         surface += 6 - len(adjacent(c) & cubes)
-    
+
     return surface
 
 
