@@ -6,39 +6,40 @@ from Utils import *
 from itertools import combinations
 
 
-def adjacent(cube_1: tuple[int, int, int], cube_2: tuple[int, int, int]) -> bool:
+def adjacent(cube: tuple[int, int, int]) -> set[tuple[int,int,int]]:
     """
-    Checks if two cubes are adjacent to each other
+    Returns the cubes adjacent to the current one
     """
-    x1, y1, z1 = cube_1
-    x2, y2, z2 = cube_2
-    return any([
-        x1 == x2 and y1 == y2 and (z1 == z2 + 1 or z1 == z2 - 1),
-        (x1 == x2 + 1 or x1 == x2 - 1) and y1 == y2 and z1 == z2,
-        x1 == x2 and (y1 == y2 + 1 or y1 == y2 - 1) and z1 == z2
-    ])
+    x, y, z = cube
+    return set([(x-1,y,z), (x+1,y,z), (x,y-1,z), (x,y+1,z), (x,y,z-1), (x,y,z+1)])
 
-def part1(input) -> int:
+
+def parse_input(input: list[str]) -> list[tuple[int, int, int]]:
     input = [l.strip() for l in input]
-    cubes = [tuple(map(int, c.split(","))) for c in input]
+    return [tuple(map(int, c.split(","))) for c in input]
 
-    # Matrix mapping a cube to its adjacent cubes (if any, otherwise an empty set)
-    adj_mat = {c: set([]) for c in cubes}
-    
-    # Take combinations of 2 cubes without repetition
-    for c1, c2 in combinations(cubes, 2):
-        # If the two cubes are adjacent
-        if adjacent(c1, c2):
-            adj_mat[c1].add(c2)
-            adj_mat[c2].add(c1)
 
+def compute_surface(cubes: set[tuple[int, int, int]]) -> int:
     # A free floating cube has 6 free faces
     # Thus, a cube with N adjacent cubes has 6 - N free faces
     # The total number of free faces (surface) is:
-    return sum([6 - len(adj) for adj in adj_mat.values()])
+    surface = 0
+    for c in cubes:
+        # Count number of cubes adjacent to the current one
+        # Reduce the free faces and add to cumulated surface
+        surface += 6 - len(adjacent(c) & cubes)
+    
+    return surface
+
+
+def part1(input):
+    cubes = set(parse_input(input))
+    return compute_surface(cubes)
+
 
 def part2(input):
     return len(input)
+
 
 def main(input):
     lines = read_input(input)
@@ -46,12 +47,13 @@ def main(input):
     if lines is None:
         print("Error reading input!")
         return
-    
+
     print(part1(lines))
     # print(part2(lines))
+
 
 if __name__ == "__main__":
     filename = os.path.splitext(sys.argv[0])[0]
     test_part(f"data/{filename}_test.txt", part1, 64)
-    # test_part(f"data/{filename}_test.txt", part2, 0)
+    # test_part(f"data/{filename}_test.txt", part2, 58)
     main(f"data/{filename}.txt")
