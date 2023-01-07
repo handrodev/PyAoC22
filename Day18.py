@@ -3,8 +3,6 @@ import os
 
 from Utils import *
 
-from itertools import combinations
-
 
 def adjacent(cube: tuple[int, int, int]) -> set[tuple[int, int, int]]:
     """
