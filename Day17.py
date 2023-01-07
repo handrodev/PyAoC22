@@ -107,11 +107,11 @@ def simulate(input, max_rocks, stop_at_cycle=False):
                 r = ry
                 # print("Rock falls 1 unit")
 
-        # We found a repeating cycle
         # Keep track of those
         state = (i, j, r[0][0], delta_y)
 
         if state in prev_states and start_idx == -1:
+            # We found the first repeating cycle
             # Keep track of first index where state repeated
             start_idx = prev_states.index(state)
             if stop_at_cycle:
